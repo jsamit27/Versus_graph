@@ -1,3 +1,4 @@
+
 # main.py
 
 import io
@@ -80,8 +81,9 @@ def plot(ids: str = Query(
         label='Selected Sales'
     )
 
-    # Draw dotted lines + annotate % difference
+    # Draw dotted lines + annotate with flipped sign logic
     for _, row in sold.iterrows():
+        # Connector line
         plt.plot(
             [row['MonthStart'], last_x],
             [row['ClosePrice'], last_y],
@@ -89,9 +91,14 @@ def plot(ids: str = Query(
             color='gray',
             linewidth=1
         )
-        pct_diff = (last_y - row['ClosePrice']) / row['ClosePrice'] * 100
+        # Compute raw percentage diff = (current_avg – sold_price) / sold_price * 100
+        raw_diff = (last_y - row['ClosePrice']) / row['ClosePrice'] * 100
+        # If current > sold_price → raw_diff > 0 → show a “–” for negative
+        # If current < sold_price → raw_diff < 0 → show a “+” for positive
+        sign = '–' if raw_diff > 0 else '+'
+        pct = abs(raw_diff)
         plt.annotate(
-            f"{row['PropertyID']} ({pct_diff:.1f}%)",
+            f"{row['PropertyID']} ({sign}{pct:.1f}%)",
             xy=(row['MonthStart'], row['ClosePrice']),
             xytext=(0, 8),
             textcoords='offset points',
@@ -117,3 +124,4 @@ def plot(ids: str = Query(
     plt.close()
     buf.seek(0)
     return StreamingResponse(buf, media_type="image/png")
+
