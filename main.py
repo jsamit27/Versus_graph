@@ -31,6 +31,9 @@ def load_and_prepare():
 
     return df
 
+@app.get("/")
+def root():
+    return {"status": "ok"}
 
 @app.get("/plot")
 def plot(ids: str = Query(
